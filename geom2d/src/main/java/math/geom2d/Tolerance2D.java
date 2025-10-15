@@ -33,13 +33,13 @@ public class Tolerance2D {
 
     public static void setGlobal(Double accuracy) {
         ACCURACY = accuracy;
-        TENPOWSCALE = FastMath.pow(10, new BigDecimal(accuracy.toString()).scale());
+        TENPOWSCALE = FastMath.pow(10, new BigDecimal(String.format("%.0e", accuracy)).scale());
         reset();
     }
 
     public static void set(Double accuracy) {
         THREAD_ACCURACY.set(accuracy);
-        THREAD_TENPOWSCALE.set(FastMath.pow(10, new BigDecimal(accuracy.toString()).scale()));
+        THREAD_TENPOWSCALE.set(FastMath.pow(10, new BigDecimal(String.format("%.0e", accuracy)).scale()));
     }
 
     public static Double get() {
@@ -73,7 +73,8 @@ public class Tolerance2D {
     }
 
     public static int compare(double a, double b) {
-        return compare(a, b, get());
+        return Double.compare(round(a), round(b));
+//        return compare(a, b, get());
     }
 
     public static int compare(double a, double b, double eps) {

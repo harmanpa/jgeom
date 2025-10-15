@@ -7,6 +7,9 @@ import math.geom3d.Point3D;
 import math.geom3d.Vector3D;
 import math.geom3d.line.StraightLine3D;
 import junit.framework.TestCase;
+import math.geom3d.line.LineSegment3D;
+import org.apache.commons.math3.geometry.euclidean.threed.Line;
+import org.apache.commons.math3.geometry.euclidean.threed.Plane;
 
 /**
  * @author dlegland
@@ -109,11 +112,12 @@ public class Plane3DTest extends TestCase {
         Plane3D plane = Plane3D.fromNormal(new Point3D(0, 0, 0), n);
         System.out.println(plane.normal());
     }
-    
+
     public void testFromNormalDistance() {
         Vector3D n = new Vector3D(0, 0, 1);
         Plane3D plane = Plane3D.fromNormal(n, -0.1);
         System.out.println(plane.normal());
         System.out.println(plane.dist());
     }
+
 }

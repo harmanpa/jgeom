@@ -88,8 +88,23 @@ public class Range1D implements Comparable<Range1D> {
         } else if (getMin() >= other.getMax()) {
             return getMin() - other.getMax();
         } else {
-            return -1 * Math.min(getMax() - other.getMin(), other.getMax() - getMin());
+            return -1 * overlap(other);
         }
+    }
+
+    /**
+     * Calculate the overlap between the ranges, or 0.0 if they do not overlap
+     *
+     * @param other
+     * @return
+     */
+    public double overlap(Range1D other) {
+        if (getMax() <= other.getMin() || getMin() >= other.getMax()) {
+            return 0.0;
+        }
+        double overlapMax = Math.min(getMax(), other.getMax());
+        double overlapMin = Math.max(getMin(), other.getMin());
+        return Math.max(overlapMax - overlapMin, 0.0);
     }
 
     @Override

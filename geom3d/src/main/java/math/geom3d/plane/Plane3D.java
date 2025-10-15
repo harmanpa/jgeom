@@ -205,7 +205,7 @@ public final class Plane3D implements Shape3D {
 
         // the difference between origin of plane and origin of line
         Vector3D dp = new Vector3D(line.origin(), this.origin());
-
+        
         // compute ratio of dot products,
         // see http://local.wasp.uwa.edu.au/~pbourke/geometry/planeline/
         double t = Vector3D.dotProduct(n, dp)

@@ -31,7 +31,7 @@ import org.apache.batik.parser.PathParser;
  * @author peter
  */
 public class SVGPaths {
-    
+
     public static CirculinearCurve2D parse(String path) {
         try {
             CirculinearPathHandler pathHandler = new CirculinearPathHandler();
@@ -44,7 +44,7 @@ public class SVGPaths {
             throw ex;
         }
     }
-    
+
     public static String toString(Curve2D curve) {
         DecimalFormat df = new DecimalFormat("#.#");
         df.setDecimalFormatSymbols(new DecimalFormatSymbols(Locale.US));
@@ -64,7 +64,7 @@ public class SVGPaths {
                     Logger.getLogger(SVGPaths.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
-            
+
             @Override
             public void handleArc(CircleArc2D arc) {
                 try {
@@ -77,13 +77,13 @@ public class SVGPaths {
         sb.append("Z");
         return sb.toString();
     }
-    
+
     public static CirculinearElement2D line(double x1, double y1, double x2, double y2) {
         return new LineSegment2D(
                 new Point2D(x1, y1),
                 new Point2D(x2, y2));
     }
-    
+
     public static CirculinearElement2D arc(double x1, double y1, double r, boolean large, boolean sweep, double x2, double y2) {
         Point2D startEndMid = new Point2D(x1 + (x2 - x1) / 2, y1 + (y2 - y1) / 2);
         boolean centreOnRight = sweep ? large : !large;
@@ -101,11 +101,11 @@ public class SVGPaths {
         return new CircleArc2D(centre, r, startAngle, endAngle, sweep);
     }
     static final double M_2PI = 2 * Math.PI;
-    
+
     public static double angle(Point2D centre, double x, double y) {
         return (Math.atan2(y - centre.getY(), x - centre.getX()) + M_2PI) % (M_2PI);
     }
-    
+
     public static void line(LineSegment2D line, Appendable out, DecimalFormat df) throws IOException {
         out.append("L ")
                 .append(df.format(line.lastPoint().getX()))
@@ -113,7 +113,7 @@ public class SVGPaths {
                 .append(df.format(line.lastPoint().getY()))
                 .append(" ");
     }
-    
+
     public static void arc(CircleArc2D arc, Appendable out, DecimalFormat df) throws IOException {
         out.append("A ")
                 .append(df.format(arc.supportingCircle().radius()))
@@ -132,121 +132,121 @@ public class SVGPaths {
             System.out.println(arc);
         }
     }
-    
+
     static class CirculinearPathHandler implements PathHandler {
-        
+
         private final List<CirculinearElement2D> elements = new ArrayList<>();
         private boolean closed = false;
         private float lastX = 0;
         private float lastY = 0;
-        
+
         public PolyCirculinearCurve2D getCurve() {
             return new PolyCirculinearCurve2D<>(elements, closed);
         }
-        
+
         @Override
         public void startPath() throws ParseException {
         }
-        
+
         @Override
         public void endPath() throws ParseException {
         }
-        
+
         @Override
         public void movetoRel(float f, float f1) throws ParseException {
             movetoAbs(f + lastX, f1 + lastY);
         }
-        
+
         @Override
         public void movetoAbs(float f, float f1) throws ParseException {
             lastX = f;
             lastY = f1;
         }
-        
+
         @Override
         public void closePath() throws ParseException {
             closed = true;
         }
-        
+
         @Override
         public void linetoRel(float f, float f1) throws ParseException {
             linetoAbs(f + lastX, f1 + lastY);
         }
-        
+
         @Override
         public void linetoAbs(float f, float f1) throws ParseException {
             elements.add(line(lastX, lastY, f, f1));
             lastX = f;
             lastY = f1;
         }
-        
+
         @Override
         public void linetoHorizontalRel(float f) throws ParseException {
             linetoHorizontalAbs(f + lastX);
         }
-        
+
         @Override
         public void linetoHorizontalAbs(float f) throws ParseException {
             elements.add(line(lastX, lastY, f, lastY));
             lastX = f;
         }
-        
+
         @Override
         public void linetoVerticalRel(float f) throws ParseException {
             linetoVerticalAbs(f + lastY);
         }
-        
+
         @Override
         public void linetoVerticalAbs(float f) throws ParseException {
             elements.add(line(lastX, lastY, lastX, f));
             lastY = f;
         }
-        
+
         @Override
         public void curvetoCubicRel(float f, float f1, float f2, float f3, float f4, float f5) throws ParseException {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
-        
+
         @Override
         public void curvetoCubicAbs(float f, float f1, float f2, float f3, float f4, float f5) throws ParseException {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
-        
+
         @Override
         public void curvetoCubicSmoothRel(float f, float f1, float f2, float f3) throws ParseException {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
-        
+
         @Override
         public void curvetoCubicSmoothAbs(float f, float f1, float f2, float f3) throws ParseException {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
-        
+
         @Override
         public void curvetoQuadraticRel(float f, float f1, float f2, float f3) throws ParseException {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
-        
+
         @Override
         public void curvetoQuadraticAbs(float f, float f1, float f2, float f3) throws ParseException {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
-        
+
         @Override
         public void curvetoQuadraticSmoothRel(float f, float f1) throws ParseException {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
-        
+
         @Override
         public void curvetoQuadraticSmoothAbs(float f, float f1) throws ParseException {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
-        
+
         @Override
         public void arcRel(float f, float f1, float f2, boolean bln, boolean bln1, float f3, float f4) throws ParseException {
             arcAbs(f, f1, f2, bln, bln1, f3 + lastX, f4 + lastY);
         }
-        
+
         @Override
         public void arcAbs(float f, float f1, float f2, boolean bln, boolean bln1, float f3, float f4) throws ParseException {
             if (!(Math.abs(f3 - lastX) < Tolerance2D.get() && Math.abs(f4 - lastY) < Tolerance2D.get())) {
@@ -255,6 +255,6 @@ public class SVGPaths {
                 lastY = f4;
             }
         }
-        
+
     }
 }
