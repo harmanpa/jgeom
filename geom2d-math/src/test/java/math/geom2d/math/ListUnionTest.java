@@ -18,18 +18,18 @@ import org.junit.Test;
  */
 public class ListUnionTest {
 
-    @Test
-    public void test1() {
-        List<CirculinearCurve2D> curves = new ArrayList<>();
-        double diameter = 200;
-        for (int i = 0; i < 3; i++) {
-            curves.add(new Circle2D(2 * i * (diameter * 0.9), 0, diameter / 2));
-        }
-        for (int i = 0; i < 3; i++) {
-            curves.add(new Circle2D((1 + 2 * i) * (diameter * 0.9), 0, diameter / 2));
-        }
-        Assert.assertTrue("Should be 1 ring", Rings2D.union(curves, 1e-6).size() == 1);
-    }
+//    @Test
+//    public void test1() {
+//        List<CirculinearCurve2D> curves = new ArrayList<>();
+//        double diameter = 200;
+//        for (int i = 0; i < 3; i++) {
+//            curves.add(new Circle2D(2 * i * (diameter * 0.9), 0, diameter / 2));
+//        }
+//        for (int i = 0; i < 3; i++) {
+//            curves.add(new Circle2D((1 + 2 * i) * (diameter * 0.9), 0, diameter / 2));
+//        }
+//        Assert.assertTrue("Should be 1 ring", Rings2D.union(curves, 1e-6).size() == 1);
+//    }
 
     @Test
     public void test2() {

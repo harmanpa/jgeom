@@ -7,6 +7,7 @@ package math.geom2d.math;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,6 +22,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+
 import math.geom2d.Angle2D;
 import math.geom2d.Box2D;
 import math.geom2d.Point2D;
@@ -75,7 +77,7 @@ public class Rings2D {
                 .allowingSelfLoops(false)
                 .buildGraphBuilder();
         Set<T> faceSet = Sets.newHashSet(faces);
-        faceSet.forEach(f -> builder.addVertex(f));
+        faceSet.forEach(builder::addVertex);
         if (faceSet.size() >= 2) {
             Sets.combinations(faceSet, 2).forEach(facePairSet -> {
                 T[] pair = Iterables.toArray(facePairSet, type);
@@ -325,7 +327,7 @@ public class Rings2D {
             List<CirculinearCurve2D> result = difference(target, curves.get(i), tolerance);
             switch (result.size()) {
                 case 0:
-                    return Arrays.asList();
+                    return Collections.emptyList();
                 case 1:
                     target = result.get(0);
                     break;
@@ -337,7 +339,7 @@ public class Rings2D {
                     return out;
             }
         }
-        return Arrays.asList(target);
+        return Collections.singletonList(target);
     }
 
     public static List<CirculinearCurve2D> union(CirculinearCurve2D curve1, CirculinearCurve2D curve2, double tolerance) {
@@ -360,22 +362,22 @@ public class Rings2D {
         if (isEmpty(curve1)) {
             if (union) {
                 if (isEmpty(curve2)) {
-                    return Arrays.asList();
+                    return Collections.emptyList();
                 } else {
-                    return Arrays.asList(curve2);
+                    return Collections.singletonList(curve2);
                 }
             } else {
-                return Arrays.asList();
+                return Collections.emptyList();
             }
         }
         if (isEmpty(curve2)) {
-            return Arrays.asList(curve1);
+            return Collections.singletonList(curve1);
         }
         if (curve1.almostEquals(curve2, tolerance)) {
             if (union) {
-                return Arrays.asList(curve1);
+                return Collections.singletonList(curve1);
             } else {
-                return Arrays.asList();
+                return Collections.emptyList();
             }
         }
         List<Point2D> points = haveParallelElements(curve1, curve2, tolerance)
@@ -383,23 +385,23 @@ public class Rings2D {
                 : new ArrayList<>(CirculinearCurves2D.findIntersections(curve1, curve2));
         if (isContained(curve1, curve2, points)) {
             if (union) {
-                return Arrays.asList(curve1);
+                return Collections.singletonList(curve1);
             } else {
-                return Arrays.asList(curve1);
+                return Collections.singletonList(curve1);
             }
         }
         if (isContained(curve2, curve1, points)) {
             if (union) {
-                return Arrays.asList(curve2);
+                return Collections.singletonList(curve2);
             } else {
-                return Arrays.asList();
+                return Collections.emptyList();
             }
         }
         if (isNonOverlapping(curve1, curve2, points)) {
             if (union) {
                 return Arrays.asList(curve1, curve2);
             } else {
-                return Arrays.asList(curve1);
+                return Collections.singletonList(curve1);
             }
         }
         if (isPolygon(curve1) && isPolygon(curve2)) {
@@ -413,8 +415,8 @@ public class Rings2D {
         }
         if (union) {
             List<CirculinearCurve2D> loops = loopCurves(ensureClockwise(curve1), ensureClockwise(curve2), points, tolerance);
-            return Arrays.asList(loops.stream().filter(c -> !isEmpty(c)
-                    && isClockwise(c))
+            return Collections.singletonList(loops.stream().filter(c -> !isEmpty(c)
+                            && isClockwise(c))
                     .sorted((c1, c2) -> (int) Math.signum(c2.length() - c1.length())).findFirst().get());
         } else {
             List<CirculinearCurve2D> loops = loopCurves(ensureClockwise(curve1), ensureCounterClockwise(curve2), points, tolerance);
@@ -427,7 +429,7 @@ public class Rings2D {
 
     static List<List<IntersectionOrCurve>> loops(CirculinearCurve2D curve1, CirculinearCurve2D curve2, Collection<Point2D> intersections, double tolerance) {
         if (intersections.size() < 2) {
-            return Arrays.asList();
+            return Collections.emptyList();
         }
         DefaultDirectedGraph<IntersectionOrCurve, DefaultEdge> graph = new DefaultDirectedGraph<>(DefaultEdge.class);
         // Add each intersection
@@ -455,16 +457,16 @@ public class Rings2D {
 
         // Add curve segments
         for (int i = 0; i < intersections1.size() - 1; i++) {
-            List<CirculinearContinuousCurve2D> segments = new ArrayList<>();
             Point2D p1 = intersections1.get(i);
             Point2D p2 = intersections1.get(i + 1);
 
             //System.out.println("Adding from " + position(curve, p1) + " to " + position(curve, p2));
-            segments.addAll(curve.subCurve(position(curve, p1), position(curve, p2)).continuousCurves());
+            List<CirculinearContinuousCurve2D> segments = new ArrayList<>(curve.subCurve(position(curve, p1), position(curve, p2)).continuousCurves());
             IntersectionOrCurve v = new IntersectionOrCurve(segments, firstCurve);
-            graph.addVertex(v);
-            graph.addEdge(new IntersectionOrCurve(p1), v, new DefaultEdge());
-            graph.addEdge(v, new IntersectionOrCurve(p2), new DefaultEdge());
+            if (graph.addVertex(v)) {
+                graph.addEdge(new IntersectionOrCurve(p1), v, new DefaultEdge());
+                graph.addEdge(v, new IntersectionOrCurve(p2), new DefaultEdge());
+            }
         }
         List<CirculinearContinuousCurve2D> segments = new ArrayList<>();
         Point2D p1 = intersections1.get(intersections1.size() - 1);
@@ -478,9 +480,10 @@ public class Rings2D {
             segments.addAll(curve.subCurve(curve.t0(), position(curve, p2)).continuousCurves());
         }
         IntersectionOrCurve v = new IntersectionOrCurve(segments, firstCurve);
-        graph.addVertex(v);
-        graph.addEdge(new IntersectionOrCurve(p1), v, new DefaultEdge());
-        graph.addEdge(v, new IntersectionOrCurve(p2), new DefaultEdge());
+        if (graph.addVertex(v)) {
+            graph.addEdge(new IntersectionOrCurve(p1), v, new DefaultEdge());
+            graph.addEdge(v, new IntersectionOrCurve(p2), new DefaultEdge());
+        }
     }
 
     static List<CirculinearCurve2D> loopCurves(CirculinearCurve2D curve1, CirculinearCurve2D curve2, Collection<Point2D> intersections, double tolerance) {
@@ -573,7 +576,7 @@ public class Rings2D {
 
     public enum ContainedState {
         Contained, Inverted, Overlapping, Equal, None
-    };
+    }
 
     public static ContainedState getState(CirculinearCurve2D outer, CirculinearCurve2D inner, double tolerance) {
         if (outer.almostEquals(inner, tolerance)) {
@@ -672,7 +675,8 @@ public class Rings2D {
                     yDot[0] = 1;
                 }
             }, curve1.t0(), new double[]{0}, curve1.t1(), new double[1]);
-        } catch (DimensionMismatchException | NumberIsTooSmallException | MaxCountExceededException | NoBracketingException ex) {
+        } catch (DimensionMismatchException | NumberIsTooSmallException | MaxCountExceededException |
+                 NoBracketingException ex) {
         }
         return points;
     }
@@ -693,8 +697,8 @@ public class Rings2D {
         return getElements(curve1).stream()
                 .filter(elem -> elem.length() > Tolerance2D.get())
                 .anyMatch((elem1) -> (getElements(curve2).stream()
-                .filter(elem -> elem.length() > Tolerance2D.get())
-                .anyMatch((elem2) -> elementsParallel(elem1, elem2, tolerance))));
+                        .filter(elem -> elem.length() > Tolerance2D.get())
+                        .anyMatch((elem2) -> elementsParallel(elem1, elem2, tolerance))));
     }
 
     public static boolean elementsParallel(
@@ -702,7 +706,7 @@ public class Rings2D {
         if (elem1 == null || elem2 == null) {
             return false;
         }
-        if(elem1.length()<tolerance || elem2.length()<tolerance) {
+        if (elem1.length() < tolerance || elem2.length() < tolerance) {
             return false;
         }
 

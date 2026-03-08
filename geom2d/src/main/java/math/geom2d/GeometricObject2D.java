@@ -12,6 +12,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.GenericDeclaration;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Objects;
@@ -93,8 +94,8 @@ public interface GeometricObject2D {
                         if (!almostEquals((Collection<GeometricObject2D>) field.get(a), (Collection<GeometricObject2D>) field.get(b), eps)) {
                             return false;
                         }
-                    } else if (collected instanceof sun.reflect.generics.reflectiveObjects.TypeVariableImpl) {
-                        sun.reflect.generics.reflectiveObjects.TypeVariableImpl<?> typeVariableImpl = (sun.reflect.generics.reflectiveObjects.TypeVariableImpl<?>) collected;
+                    } else if (collected instanceof TypeVariable) {
+                        TypeVariable<?> typeVariableImpl = (TypeVariable<?>) collected;
                         GenericDeclaration genericDeclaration = typeVariableImpl.getGenericDeclaration();
                         if (genericDeclaration instanceof Class && GeometricObject2D.class.isAssignableFrom((Class<?>) genericDeclaration)) {
                             if (!almostEquals((Collection<GeometricObject2D>) field.get(a), (Collection<GeometricObject2D>) field.get(b), eps)) {
