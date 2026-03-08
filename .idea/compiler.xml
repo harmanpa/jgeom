@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="geom2d-tune" />
+        <module name="geom3d-poly2tri" />
+        <module name="geom2d-clipper" />
+        <module name="geom3d-csg" />
+        <module name="geom2d-nesting" />
+        <module name="geom2d-csg" />
+        <module name="geom2d" />
+        <module name="geom2d-contours" />
+        <module name="geom3d" />
+        <module name="geom2d-demo" />
+        <module name="geom2d-check" />
+        <module name="geom3d-quickhull" />
+        <module name="geom2d-math" />
+        <module name="geom2d-bezier" />
+        <module name="geom3d-io" />
+        <module name="geom2d-decomposition" />
+        <module name="geom2d-binpacking" />
+        <module name="geom2d-svg" />
+        <module name="geom3d-utils" />
+        <module name="dynamicaabbtree" />
+        <module name="geom2d-font" />
+      </profile>
+    </annotationProcessing>
+  </component>
+</project>

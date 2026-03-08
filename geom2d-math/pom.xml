@@ -29,7 +29,7 @@
         <dependency>
             <groupId>org.jgrapht</groupId>
             <artifactId>jgrapht-core</artifactId>
-            <version>1.4.0</version>
+            <version>1.5.2</version>
         </dependency>
         <dependency>
             <groupId>jgeom</groupId>
@@ -44,7 +44,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>29.0-jre</version>
+            <version>31.0.1-jre</version>
         </dependency>
     </dependencies>
     <properties>

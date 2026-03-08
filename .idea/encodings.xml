@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/dynamicaabbtree/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/dynamicaabbtree/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom2d-bezier/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom2d-bezier/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom2d-binpacking/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom2d-binpacking/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom2d-check/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom2d-check/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom2d-clipper/src" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom2d-clipper/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom2d-contours/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom2d-contours/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom2d-csg/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom2d-csg/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom2d-decomposition/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom2d-decomposition/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom2d-demo/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom2d-demo/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom2d-font/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom2d-font/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom2d-math/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom2d-math/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom2d-nesting/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom2d-nesting/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom2d-svg/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom2d-svg/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom2d-tune/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom2d-tune/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom2d/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom2d/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom3d-csg/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom3d-csg/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom3d-io/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom3d-io/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom3d-poly2tri/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom3d-poly2tri/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom3d-quickhull/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom3d-quickhull/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom3d-utils/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom3d-utils/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom3d/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/geom3d/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
+  </component>
+</project>
