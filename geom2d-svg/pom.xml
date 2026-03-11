@@ -19,16 +19,12 @@
             <groupId>org.apache.xmlgraphics</groupId>
             <artifactId>batik-parser</artifactId>
             <version>1.19</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.xmlgraphics</groupId>
-            <artifactId>batik-svggen</artifactId>
-            <version>1.19</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.xmlgraphics</groupId>
-            <artifactId>batik-dom</artifactId>
-            <version>1.19</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>xml-apis-ext</artifactId>
+                    <groupId>xml-apis</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>jgeom</groupId>
