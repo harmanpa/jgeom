@@ -128,8 +128,21 @@ public class Triangle3D implements Shape3D {
         return triangles.stream().parallel().mapToDouble(tri -> tri.windingNumber(p)).sum();
     }
 
+    /**
+     * Whether the point is enclosed by the triangles, which are taken to form a
+     * closed surface.
+     * <p>
+     * The winding number is half the solid angle the surface subtends, so it is
+     * 2 pi seen from within and zero from without - or minus 2 pi if the
+     * surface is wound the other way, which is why the magnitude is what
+     * counts. The two are so far apart that anything past halfway settles it.
+     *
+     * @param triangles A closed surface
+     * @param p The point to test
+     * @return True if the point is enclosed
+     */
     public static boolean isInside(List<Triangle3D> triangles, Point3D p) {
-        return windingNumber(triangles, p) >= 2 * Math.PI;
+        return Math.abs(windingNumber(triangles, p)) > Math.PI;
     }
 
     public static double distance(List<Triangle3D> triangles, Point3D p) {
@@ -290,8 +303,8 @@ public class Triangle3D implements Shape3D {
             new double[]{pc.getX(), pc.getY(), pc.getZ()}
         })).getDeterminant();
         double a = vertices[0].distance(point);
-        double b = vertices[0].distance(point);
-        double c = vertices[0].distance(point);
+        double b = vertices[1].distance(point);
+        double c = vertices[2].distance(point);
         double dab = pa.asVector().dot(pb.asVector());
         double dbc = pb.asVector().dot(pc.asVector());
         double dca = pc.asVector().dot(pa.asVector());
