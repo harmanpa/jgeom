@@ -244,6 +244,302 @@ public class Triangle3D implements Shape3D {
     }
 
     /**
+     * Tests whether this triangle overlaps another one, using the default
+     * tolerance.
+     *
+     * @param other The triangle to test against
+     * @return True if the two triangles share at least one point
+     * @see #intersects(math.geom3d.io.Triangle3D, double)
+     */
+    public boolean intersects(Triangle3D other) {
+        return intersects(other, Tolerance2D.get());
+    }
+
+    /**
+     * Tests whether this triangle overlaps another one, using the Möller
+     * interval-overlap test with the coplanar case handled separately.
+     * <p>
+     * Triangles are treated as closed sets, so contacts along an edge or at a
+     * single vertex count as an intersection. The tolerance is a fuzz factor
+     * for those touching contacts and for classifying vertices as lying on a
+     * plane: triangles that genuinely overlap always report true, and triangles
+     * separated by more than the tolerance always report false, but a pair
+     * separated by less than the tolerance may report either. This is not a
+     * proximity query - use it to decide whether two triangles clash, not how
+     * far apart they are.
+     * <p>
+     * Triangles whose height over their longest edge is within the tolerance
+     * are degenerate (a sliver, segment or point) and are tested as segments.
+     *
+     * @param other The triangle to test against
+     * @param tolerance Distance within which touching triangles are considered
+     * to intersect; negative values are treated as zero
+     * @return True if the two triangles share at least one point
+     */
+    public boolean intersects(Triangle3D other, double tolerance) {
+        double tol = Math.max(tolerance, 0.0);
+        Point3D[] a = this.vertices;
+        Point3D[] b = other.vertices;
+        // The stored normal may have been supplied by the caller and need not
+        // agree with the vertices, so derive the plane normals from scratch.
+        Vector3D na = planeNormal(a, tol);
+        Vector3D nb = planeNormal(b, tol);
+        if (na == null || nb == null) {
+            return degenerateIntersects(a, na, b, nb, tol);
+        }
+        // Reject if either triangle lies wholly on one side of the other's
+        // plane; distances within the tolerance are snapped onto the plane.
+        double[] da = planeDistances(nb, b[0], a, tol);
+        if (allPositive(da) || allNegative(da)) {
+            return false;
+        }
+        double[] db = planeDistances(na, a[0], b, tol);
+        if (allPositive(db) || allNegative(db)) {
+            return false;
+        }
+        Vector3D direction = Vector3D.crossProduct(na, nb);
+        double directionNorm = direction.norm();
+        if (allZero(da) || allZero(db) || directionNorm < PARALLEL_EPSILON) {
+            return coplanarIntersects(a, b, na, tol);
+        }
+        // Both triangles cross the line where the two planes meet: they
+        // intersect exactly when the two crossed intervals overlap.
+        direction = direction.times(1.0 / directionNorm);
+        double[] intervalA = interval(a, da, direction, a[0]);
+        double[] intervalB = interval(b, db, direction, a[0]);
+        if (intervalA == null || intervalB == null) {
+            return false;
+        }
+        return Math.max(intervalA[0], intervalB[0]) <= Math.min(intervalA[1], intervalB[1]) + tol;
+    }
+
+    /**
+     * Threshold below which two plane normals are treated as parallel, and the
+     * intersection line of their planes as undefined. Both normals are unit
+     * length, so the norm of their cross product is the sine of the angle
+     * between them.
+     */
+    private static final double PARALLEL_EPSILON = 1e-12;
+
+    /**
+     * The unit normal of the plane through the three vertices, or null if the
+     * triangle is degenerate - that is, if its height over its longest edge is
+     * within the tolerance, so that it is indistinguishable from a segment.
+     */
+    private static Vector3D planeNormal(Point3D[] v, double tol) {
+        Vector3D cross = Vector3D.crossProduct(new Vector3D(v[0], v[1]), new Vector3D(v[0], v[2]));
+        double norm = cross.norm();
+        double longestEdge = Math.max(v[0].distance(v[1]),
+                Math.max(v[1].distance(v[2]), v[2].distance(v[0])));
+        // norm is twice the area, ie longestEdge multiplied by the height over it
+        if (norm <= tol * longestEdge) {
+            return null;
+        }
+        return cross.times(1.0 / norm);
+    }
+
+    /**
+     * Signed distances of each vertex from the plane through origin with the
+     * given unit normal, with distances within the tolerance snapped to zero.
+     */
+    private static double[] planeDistances(Vector3D normal, Point3D origin, Point3D[] v, double tol) {
+        double[] distances = new double[3];
+        for (int i = 0; i < 3; i++) {
+            double d = normal.dot(new Vector3D(origin, v[i]));
+            distances[i] = Math.abs(d) <= tol ? 0.0 : d;
+        }
+        return distances;
+    }
+
+    private static boolean allPositive(double[] d) {
+        return d[0] > 0 && d[1] > 0 && d[2] > 0;
+    }
+
+    private static boolean allNegative(double[] d) {
+        return d[0] < 0 && d[1] < 0 && d[2] < 0;
+    }
+
+    private static boolean allZero(double[] d) {
+        return d[0] == 0 && d[1] == 0 && d[2] == 0;
+    }
+
+    /**
+     * The range covered by the triangle along the given unit direction, over
+     * the part of it lying on the plane the distances were measured against.
+     * That is the set of vertices on the plane together with the points where
+     * edges cross it. Returns null if the triangle does not reach the plane.
+     */
+    private static double[] interval(Point3D[] v, double[] d, Vector3D direction, Point3D origin) {
+        double min = Double.POSITIVE_INFINITY;
+        double max = Double.NEGATIVE_INFINITY;
+        for (int i = 0; i < 3; i++) {
+            int j = (i + 1) % 3;
+            if (d[i] == 0.0) {
+                double p = direction.dot(new Vector3D(origin, v[i]));
+                min = Math.min(min, p);
+                max = Math.max(max, p);
+            }
+            if (d[i] * d[j] < 0) {
+                double t = d[i] / (d[i] - d[j]);
+                Point3D crossing = v[i].plus(new Vector3D(v[i], v[j]).times(t));
+                double p = direction.dot(new Vector3D(origin, crossing));
+                min = Math.min(min, p);
+                max = Math.max(max, p);
+            }
+        }
+        return min > max ? null : new double[]{min, max};
+    }
+
+    /**
+     * Overlap test for two triangles sharing a plane, whose unit normal is
+     * given. Either one may contain the other, or their outlines may cross.
+     */
+    private static boolean coplanarIntersects(Point3D[] a, Point3D[] b, Vector3D normal, double tol) {
+        for (int i = 0; i < 3; i++) {
+            if (containsInPlane(b, normal, a[i], tol) || containsInPlane(a, normal, b[i], tol)) {
+                return true;
+            }
+        }
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (segmentDistance(a[i], a[(i + 1) % 3], b[j], b[(j + 1) % 3]) <= tol) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Whether the point, projected onto the plane with the given unit normal,
+     * lies inside the triangle or within the tolerance of its outline. The
+     * winding of the triangle relative to the normal does not matter.
+     */
+    private static boolean containsInPlane(Point3D[] v, Vector3D normal, Point3D point, double tol) {
+        boolean allLeft = true;
+        boolean allRight = true;
+        for (int i = 0; i < 3; i++) {
+            Vector3D edge = new Vector3D(v[i], v[(i + 1) % 3]);
+            double length = edge.norm();
+            if (length == 0) {
+                continue;
+            }
+            // In-plane distance from the point to the edge, signed by the side
+            double side = Vector3D.crossProduct(edge, new Vector3D(v[i], point)).dot(normal) / length;
+            if (side < -tol) {
+                allLeft = false;
+            }
+            if (side > tol) {
+                allRight = false;
+            }
+        }
+        return allLeft || allRight;
+    }
+
+    /**
+     * Whether the segment touches the triangle, whose unit normal is given.
+     * Used for triangles too degenerate to have a plane of their own.
+     */
+    private static boolean segmentIntersects(Point3D[] v, Vector3D normal, Point3D p, Point3D q, double tol) {
+        double dp = normal.dot(new Vector3D(v[0], p));
+        double dq = normal.dot(new Vector3D(v[0], q));
+        dp = Math.abs(dp) <= tol ? 0.0 : dp;
+        dq = Math.abs(dq) <= tol ? 0.0 : dq;
+        if ((dp > 0 && dq > 0) || (dp < 0 && dq < 0)) {
+            return false;
+        }
+        if (dp == 0 && containsInPlane(v, normal, p, tol)) {
+            return true;
+        }
+        if (dq == 0 && containsInPlane(v, normal, q, tol)) {
+            return true;
+        }
+        if (dp * dq < 0) {
+            Point3D crossing = p.plus(new Vector3D(p, q).times(dp / (dp - dq)));
+            if (containsInPlane(v, normal, crossing, tol)) {
+                return true;
+            }
+        }
+        for (int i = 0; i < 3; i++) {
+            if (segmentDistance(p, q, v[i], v[(i + 1) % 3]) <= tol) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Overlap test where at least one triangle is degenerate, and so is treated
+     * as the segments of its edges. A null normal marks the degenerate one.
+     */
+    private static boolean degenerateIntersects(Point3D[] a, Vector3D na, Point3D[] b, Vector3D nb, double tol) {
+        for (int i = 0; i < 3; i++) {
+            if (na != null && segmentIntersects(a, na, b[i], b[(i + 1) % 3], tol)) {
+                return true;
+            }
+            if (nb != null && segmentIntersects(b, nb, a[i], a[(i + 1) % 3], tol)) {
+                return true;
+            }
+        }
+        if (na != null || nb != null) {
+            return false;
+        }
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                if (segmentDistance(a[i], a[(i + 1) % 3], b[j], b[(j + 1) % 3]) <= tol) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Shortest distance between two segments, after Ericson, Real-Time
+     * Collision Detection, section 5.1.9.
+     */
+    private static double segmentDistance(Point3D p1, Point3D q1, Point3D p2, Point3D q2) {
+        Vector3D d1 = new Vector3D(p1, q1);
+        Vector3D d2 = new Vector3D(p2, q2);
+        Vector3D r = new Vector3D(p2, p1);
+        double a = d1.normSq();
+        double e = d2.normSq();
+        double f = d2.dot(r);
+        double s;
+        double t;
+        if (a <= 0 && e <= 0) {
+            s = 0;
+            t = 0;
+        } else if (a <= 0) {
+            s = 0;
+            t = clamp(f / e);
+        } else {
+            double c = d1.dot(r);
+            if (e <= 0) {
+                t = 0;
+                s = clamp(-c / a);
+            } else {
+                double b = d1.dot(d2);
+                double denom = a * e - b * b;
+                s = denom != 0 ? clamp((b * f - c * e) / denom) : 0;
+                t = (b * s + f) / e;
+                if (t < 0) {
+                    t = 0;
+                    s = clamp(-c / a);
+                } else if (t > 1) {
+                    t = 1;
+                    s = clamp((b - c) / a);
+                }
+            }
+        }
+        return p1.plus(d1.times(s)).distance(p2.plus(d2.times(t)));
+    }
+
+    private static double clamp(double v) {
+        return Math.max(0, Math.min(1, v));
+    }
+
+    /**
      * Moves the triangle in the X,Y,Z direction
      *
      * @param translation A vector of the delta for each coordinate.
