@@ -101,23 +101,52 @@ public class MinimumTranslationTest {
     }
 
     @Test
-    public void deepOverlapOfUnequalBoxes() throws QuickHullException {
-        // A long bar driven through a cube: the bar is 1 deep in Y and Z, so
-        // the shortest way out is 1, not the length of the overlap along X
+    public void barThroughACubeMustClearIt() throws QuickHullException {
+        // A bar 1 deep in Y and Z driven through a cube of side 2. The bar's
+        // extent sits wholly inside the cube's on those axes, so it has to
+        // cross the whole cube to get out: 1.5, not the 1 of the overlap
         MinimumTranslation mt = MinimumTranslation.between(cube(), cube(20.0, 1.0, 1.0));
-        assertEquals(1.0, mt.getDepth(), EPS);
+        assertEquals(1.5, mt.getDepth(), EPS);
         assertEquals(0.0, mt.getDirection().getX(), EPS);
+        assertSeparatedByItsOwnAnswer(cube(), cube(20.0, 1.0, 1.0));
+    }
+
+    @Test
+    public void containedSetHasTheDepthToGetOut() throws QuickHullException {
+        // A cube of side 2 at the centre of one of side 10 has to travel 6 to
+        // clear it - the half width of each, added. Nothing about this is
+        // visible to a test that only looks for crossing surfaces.
+        MinimumTranslation mt = MinimumTranslation.between(cube(10.0, 10.0, 10.0), cube());
+        assertTrue(mt.isOverlapping());
+        assertEquals(6.0, mt.getDepth(), EPS);
+        assertSeparatedByItsOwnAnswer(cube(10.0, 10.0, 10.0), cube());
+    }
+
+    @Test
+    public void containedOffCentreLeavesByTheNearestFace() throws QuickHullException {
+        // Pushed towards +X inside the big cube, so the short way out is +X
+        MinimumTranslation mt = MinimumTranslation.between(
+                cube(10.0, 10.0, 10.0), moved(cube(), 3, 0, 0));
+        assertEquals(3.0, mt.getDepth(), EPS);
+        assertTrue(mt.getDirection().getX() > 0);
+    }
+
+    /**
+     * Applying the answer has to actually part them, which is the property that
+     * the length of the overlap between two extents does not have.
+     */
+    private static void assertSeparatedByItsOwnAnswer(List<Triangle3D> a, List<Triangle3D> b) {
+        MinimumTranslation mt = MinimumTranslation.between(a, b);
+        Vector3D push = mt.getDirection().times(mt.getDepth());
+        List<Triangle3D> pushed = moved(b, push.getX(), push.getY(), push.getZ());
+        assertEquals(0.0, MinimumTranslation.between(a, pushed).getDepth(), 1e-9);
     }
 
     @Test
     public void directionSeparatesWhenApplied() throws QuickHullException {
-        List<Triangle3D> fixed = cube();
-        List<Triangle3D> other = moved(cube(), 1.3, 0.7, 0.5);
-        MinimumTranslation mt = MinimumTranslation.between(fixed, other);
-        Vector3D push = mt.getDirection().times(mt.getDepth());
-        List<Triangle3D> pushed = moved(other, push.getX(), push.getY(), push.getZ());
-        // Just separated, so nudging a little further leaves a real gap
-        assertEquals(0.0, MinimumTranslation.between(fixed, pushed).getDepth(), 1e-9);
+        assertSeparatedByItsOwnAnswer(cube(), moved(cube(), 1.3, 0.7, 0.5));
+        assertSeparatedByItsOwnAnswer(cube(), moved(cube(), 0.2, 0, 0));
+        assertSeparatedByItsOwnAnswer(cube(10.0, 10.0, 10.0), moved(cube(), 1, 2, -3));
     }
 
     @Test

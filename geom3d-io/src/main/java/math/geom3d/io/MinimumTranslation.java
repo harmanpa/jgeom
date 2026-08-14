@@ -67,26 +67,30 @@ public final class MinimumTranslation {
         if (pointsA.length == 0 || pointsB.length == 0) {
             return new MinimumTranslation(0.0, new Vector3D(1, 0, 0));
         }
-        double leastOverlap = Double.MAX_VALUE;
+        double leastPush = Double.MAX_VALUE;
         Vector3D leastDirection = new Vector3D(1, 0, 0);
         for (Vector3D direction : directions(a, b)) {
             double[] rangeA = range(pointsA, direction);
             double[] rangeB = range(pointsB, direction);
-            double overlap = Math.min(rangeA[1], rangeB[1]) - Math.max(rangeA[0], rangeB[0]);
-            if (overlap <= 0) {
+            // How far b has to travel for its extent to clear a's, going one
+            // way and then the other. Note this is not the length of the
+            // overlap between the two extents: where one extent sits wholly
+            // inside the other, b has to cross the whole of a to get out.
+            double along = rangeA[1] - rangeB[0];
+            double against = rangeB[1] - rangeA[0];
+            if (along <= 0 || against <= 0) {
                 return new MinimumTranslation(0.0, direction);
             }
-            if (overlap < leastOverlap) {
-                leastOverlap = overlap;
-                // Point away from a, so that translating b by the depth along
-                // it is what separates them
-                leastDirection = rangeA[0] + rangeA[1] <= rangeB[0] + rangeB[1]
-                        ? direction : direction.opposite();
+            double push = Math.min(along, against);
+            if (push < leastPush) {
+                leastPush = push;
+                // Whichever way out is shorter
+                leastDirection = along <= against ? direction : direction.opposite();
             }
         }
-        return leastOverlap == Double.MAX_VALUE
+        return leastPush == Double.MAX_VALUE
                 ? new MinimumTranslation(0.0, leastDirection)
-                : new MinimumTranslation(leastOverlap, leastDirection);
+                : new MinimumTranslation(leastPush, leastDirection);
     }
 
     /**
