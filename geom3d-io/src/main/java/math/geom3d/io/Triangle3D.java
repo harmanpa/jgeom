@@ -381,7 +381,7 @@ public class Triangle3D implements Shape3D {
      * triangle is degenerate - that is, if its height over its longest edge is
      * within the tolerance, so that it is indistinguishable from a segment.
      */
-    private static Vector3D planeNormal(Point3D[] v, double tol) {
+    static Vector3D planeNormal(Point3D[] v, double tol) {
         Vector3D cross = Vector3D.crossProduct(new Vector3D(v[0], v[1]), new Vector3D(v[0], v[2]));
         double norm = cross.norm();
         double longestEdge = Math.max(v[0].distance(v[1]),
