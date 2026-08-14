@@ -29,8 +29,13 @@ public final class AABBUtils {
         );
     }
 
+    /**
+     * The gap between two ranges on one axis, or zero if they overlap. At most
+     * one of the two differences can be positive, so the gap is the larger of
+     * them - taking the smaller made this always return zero.
+     */
     static float minDistance(float minA, float maxA, float minB, float maxB) {
-        return (float) Math.min(Math.max(0.0f, minA - maxB), Math.max(0.0f, minB - maxA));
+        return Math.max(Math.max(0.0f, minA - maxB), Math.max(0.0f, minB - maxA));
     }
 
     public static float getWidth(AABBf aabb) {
@@ -52,17 +57,34 @@ public final class AABBUtils {
         return 2.0f * (width * height + width * depth + height * depth);
     }
 
+    /**
+     * The axis-aligned bounds of the transformed box. All eight corners have to
+     * be taken: under rotation the transformed min and max corners alone do not
+     * bound the box, and the result comes out too small.
+     *
+     * @param original The box to transform
+     * @param transformed The box to write the result into
+     * @param transform The transform to apply
+     * @return The transformed box, for chaining
+     */
     public static AABBf transformed(AABBf original, AABBf transformed, AffineTransform3D transform) {
-        Point3D p1 = new Point3D(original.minX, original.minY, original.minZ).transform(transform);
-        Point3D p2 = new Point3D(original.maxX, original.maxY, original.maxZ).transform(transform);
-        return transformed.setMin(
-                (float) Math.min(p1.getX(), p2.getX()),
-                (float) Math.min(p1.getY(), p2.getY()),
-                (float) Math.min(p1.getZ(), p2.getZ()))
-                .setMax(
-                        (float) Math.max(p1.getX(), p2.getX()),
-                        (float) Math.max(p1.getY(), p2.getY()),
-                        (float) Math.max(p1.getZ(), p2.getZ()));
+        double minX = Double.POSITIVE_INFINITY, minY = Double.POSITIVE_INFINITY, minZ = Double.POSITIVE_INFINITY;
+        double maxX = Double.NEGATIVE_INFINITY, maxY = Double.NEGATIVE_INFINITY, maxZ = Double.NEGATIVE_INFINITY;
+        for (int corner = 0; corner < 8; corner++) {
+            Point3D p = new Point3D(
+                    (corner & 1) == 0 ? original.minX : original.maxX,
+                    (corner & 2) == 0 ? original.minY : original.maxY,
+                    (corner & 4) == 0 ? original.minZ : original.maxZ).transform(transform);
+            minX = Math.min(minX, p.getX());
+            minY = Math.min(minY, p.getY());
+            minZ = Math.min(minZ, p.getZ());
+            maxX = Math.max(maxX, p.getX());
+            maxY = Math.max(maxY, p.getY());
+            maxZ = Math.max(maxZ, p.getZ());
+        }
+        return transformed
+                .setMin((float) minX, (float) minY, (float) minZ)
+                .setMax((float) maxX, (float) maxY, (float) maxZ);
     }
 
     private static final ThreadLocal<AABBf> TEMP_AABB_1 = new ThreadLocal<AABBf>() {
