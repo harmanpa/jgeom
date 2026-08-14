@@ -166,19 +166,74 @@ public class Triangle3D implements Shape3D {
         return new Triangle3D(vertices[0].transform(trans), vertices[1].transform(trans), vertices[2].transform(trans));
     }
 
+    /**
+     * The minimum distance from the point to this triangle: the perpendicular
+     * distance where the point lies over the face, and the distance to the
+     * nearest edge otherwise. Degenerate triangles fall back to their edges.
+     *
+     * @param p
+     * @return
+     */
     @Override
     public double distance(Point3D p) {
+        Vector3D planeNormal = planeNormal(vertices, 0.0);
+        if (planeNormal != null && containsInPlane(vertices, planeNormal, p, 0.0)) {
+            return Math.abs(planeNormal.dot(new Vector3D(vertices[0], p)));
+        }
         double minDistance = Double.MAX_VALUE;
-        minDistance = Math.min(minDistance, this.vertices[0].distance(p));
-        minDistance = Math.min(minDistance, this.vertices[1].distance(p));
-        minDistance = Math.min(minDistance, this.vertices[2].distance(p));
-        Plane3D plane = getPlane();
-        double planarDistance = plane.distance(p);
-        if (planarDistance < minDistance) {
-            Point2D p2 = plane.pointPosition(plane.projectPoint(p));
-            if (triangleContains(plane, p2)) {
-                return planarDistance;
+        for (int i = 0; i < 3; i++) {
+            // A zero length segment through p gives the point to edge distance
+            minDistance = Math.min(minDistance, segmentDistance(p, p, vertices[i], vertices[(i + 1) % 3]));
+        }
+        return minDistance;
+    }
+
+    /**
+     * The minimum distance between this triangle and another, using the default
+     * tolerance.
+     *
+     * @param other The triangle to measure to
+     * @return The distance, or zero if the two triangles intersect
+     * @see #distance(math.geom3d.io.Triangle3D, double)
+     */
+    public double distance(Triangle3D other) {
+        return distance(other, Tolerance2D.get());
+    }
+
+    /**
+     * The minimum distance between this triangle and another, which is zero if
+     * they intersect.
+     * <p>
+     * For two triangles that miss each other the closest approach is between an
+     * edge of one and an edge of the other, or between a vertex of one and the
+     * face of the other. Taking only the vertex cases - as a point to triangle
+     * distance in each direction does - overstates the distance whenever the
+     * closest approach is edge to edge, which is the usual case for crossing
+     * bars and for any pair of faces meeting at an angle.
+     *
+     * @param other The triangle to measure to
+     * @param tolerance Distance within which the triangles count as touching,
+     * and so at zero distance
+     * @return The distance, or zero if the two triangles intersect
+     */
+    public double distance(Triangle3D other, double tolerance) {
+        // The feature minimum below is only the true distance for triangles
+        // that miss each other: an edge crossing the far side of a face is
+        // nearer to it than any of these pairs
+        if (intersects(other, tolerance)) {
+            return 0.0;
+        }
+        double minDistance = Double.MAX_VALUE;
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                minDistance = Math.min(minDistance, segmentDistance(
+                        this.vertices[i], this.vertices[(i + 1) % 3],
+                        other.vertices[j], other.vertices[(j + 1) % 3]));
             }
+        }
+        for (int i = 0; i < 3; i++) {
+            minDistance = Math.min(minDistance, other.distance(this.vertices[i]));
+            minDistance = Math.min(minDistance, this.distance(other.vertices[i]));
         }
         return minDistance;
     }
